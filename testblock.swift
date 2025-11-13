@@ -1,21 +1,29 @@
 import Cocoa
 
-var blockedApps = CommandLine.arguments.dropFirst()
-
-if (blockedApps == []) {
-    var newApp = "Finder"
-    blockedApps = ["Finder"]
-
-    while (newApp != "") {
-        print("Enter first app (blank to continue):")
-        newApp = readLine()!
-        blockedApps.append(newApp)
-        print(blockedApps)
-    }
-
-    blockedApps.remove(at: 0)
+let args = CommandLine.arguments.dropFirst()
+var except = false
+var blockedApps = args
+if (args.first! == "except") { 
+    except = true; 
     print(blockedApps)
+    blockedApps = args.dropFirst()
 }
+
+// For a manual command line utility (entering one by one)
+// if (blockedApps == []) {
+//     var newApp = "Finder"
+//     blockedApps = ["Finder"]
+
+//     while (newApp != "") {
+//         print("Enter first app (blank to continue):")
+//         newApp = readLine()!
+//         blockedApps.append(newApp)
+//         print(blockedApps)
+//     }
+
+//     blockedApps.remove(at: 0)
+//     print(blockedApps)
+// }
 
 func isBlocked() -> Bool {
     return true;
@@ -27,9 +35,16 @@ NSWorkspace.shared.notificationCenter.addObserver(
     queue: .main
 ) { notification in
     if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
-        if blockedApps.contains(app.localizedName ?? "") && isBlocked() {
-            print(app.localizedName)
-            app.forceTerminate()
+        if except {
+            if (!blockedApps.contains(app.localizedName ?? "") && isBlocked()) {
+                print(app.localizedName)
+                app.forceTerminate()
+            }
+        } else {
+            if blockedApps.contains(app.localizedName ?? "") && isBlocked() {
+                print(app.localizedName)
+                app.forceTerminate()
+            }
         }
     }
 }
